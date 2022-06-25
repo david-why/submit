@@ -539,7 +539,7 @@ class VJudgeSubmitter(Submitter):
             url = 'https://vjudge.net/problem/%s/origin' % id.partition('_')[2]
             r = self.session.get(url, stream=True)
             url = r.url
-            return pickle.dumps(do_submit(n, url, lang))
+            return pickle.dumps(submit(n, url, lang))
         finally:
             os.remove(n)
 
@@ -682,7 +682,7 @@ class USACOTrainingSubmitter(Submitter):
         raise ValueError(id)
 
 
-def do_submit(file, url, lang='c++', verbose=False):
+def submit(file, url, lang='c++', verbose=False):
     for oj in OJS:
         if verbose:
             print('Trying', oj.NAME)
@@ -708,6 +708,9 @@ OJS = {
 }
 LANGUAGES = {'c++'}
 
+__all__ = ['CONFIG_DIR', 'OJS', 'LANGUAGES', 'submit', 'Submission']
+__all__.extend((x.__name__ for x in OJS))
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='submit to an OJ')
     ap.add_argument(
@@ -728,7 +731,7 @@ if __name__ == '__main__':
     url = args.url
     lang = args.lang
 
-    sub = do_submit(file, url, lang, True)
+    sub = submit(file, url, lang, True)
     if sub is None:
         exit('Submission failed!')
     print('Status:               ', sub.status)
