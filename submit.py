@@ -224,14 +224,6 @@ class CodeforcesSubmitter(Submitter):
             self.logout()
             _load_or_get(self)
 
-    @staticmethod
-    def _ftaa():
-        return ''.join(random.choices(string.ascii_letters, k=18))
-
-    @staticmethod
-    def _bfaa():
-        return 'f1b3f18c715565b589b7823cda7448ce'
-
     @classmethod
     def _parse(cls, url):
         match = cls.PSET_RE.match(url) or cls.COMP_RE.match(url)
@@ -264,8 +256,8 @@ class CodeforcesSubmitter(Submitter):
             data={
                 'csrf_token': csrf,
                 'action': 'enter',
-                'ftaa': self._ftaa(),
-                'bfaa': self._bfaa(),
+                'ftaa': 'n/a',
+                'bfaa': 'n/a',
                 'handleOrEmail': self.username,
                 'password': self.password,
                 '_tta': '176',
@@ -287,8 +279,8 @@ class CodeforcesSubmitter(Submitter):
             params={'csrf_token': csrf},
             data={
                 'csrf_token': csrf,
-                'ftaa': self._ftaa(),
-                'bfaa': self._bfaa(),
+                'ftaa': 'n/a',
+                'bfaa': 'n/a',
                 'action': 'submitSolutionFormSubmitted',
                 'submittedProblemIndex': problem,
                 'programTypeId': self.LANG[lang],
