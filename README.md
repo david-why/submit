@@ -1,6 +1,8 @@
 # submit
 Submit your code to an online OJ with a simple command!
 
+Read my blog article about this submitter [here](https://david.webook.club/2022/06/26/online-oj-submitter/)!
+
 ## Usage
 ```
 usage: submit.py [-h] [-l {c++}] file url
