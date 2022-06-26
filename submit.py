@@ -72,6 +72,7 @@ def _save_sess(obj):
 
 class Submission:
     class Status(IntEnum):
+        UNKNOWN = -1
         ACCEPTED = 0
         WRONG_ANSWER = 1
         TIME_LIMIT_EXCEEDED = 2
@@ -79,6 +80,7 @@ class Submission:
         COMPILATION_ERROR = 4
         IDLENESS_LIMIT_EXCEEDED = 5
 
+    UNKNOWN = Status.UNKNOWN
     ACCEPTED = Status.ACCEPTED
     WRONG_ANSWER = Status.WRONG_ANSWER
     TIME_LIMIT_EXCEEDED = Status.TIME_LIMIT_EXCEEDED
@@ -339,6 +341,7 @@ class CodeforcesSubmitter(Submitter):
                             'Unknown status: %r, using RUNTIME_ERROR' % msg
                         )
                     )
+                    st = Submission.UNKNOWN
                 return Submission(
                     st,
                     msg,
@@ -436,7 +439,7 @@ class AtCoderSubmitter(Submitter):
         elif stat == 'AC':
             st = Submission.ACCEPTED
         else:
-            raise KeyError(stat)
+            st = Submission.UNKNOWN
         return st
 
     def wait_submission(self, id):
@@ -548,6 +551,21 @@ class USACOTrainingSubmitter(Submitter):
             self.logout()
             _load_or_get(self)
 
+    @property
+    def _a(self):
+        return self.session.cookies.get('_a')
+
+    def _get(self, url, **kwargs):
+        kwargs.setdefault('params', {}).setdefault('a', self._a)
+        return self.session.get(url, **kwargs)
+
+    def _post(self, url, **kwargs):
+        if 'files' in kwargs:
+            kwargs['files'].setdefault('a', (None, self._a))
+        else:
+            kwargs.setdefault('data', {}).setdefault('a', self._a)
+        return self.session.post(url, **kwargs)
+
     @classmethod
     def _parse(cls, url):
         p = urllib.parse.urlparse(url)
@@ -568,7 +586,7 @@ class USACOTrainingSubmitter(Submitter):
         return 'https://train.usaco.org/usacoprob2?S=%s' % pid
 
     def login(self):
-        r = self.session.post(
+        r = self._post(
             'https://train.usaco.org',
             data={
                 'NAME': self.username,
@@ -577,19 +595,21 @@ class USACOTrainingSubmitter(Submitter):
             },
         )
         a = r.text.index('?a=') + 3
-        self._a = r.text[a : r.text.index('"', a)]
+        self.session.cookies.set('_a', r.text[a : r.text.index('"', a)])
 
     @property
     def logged_in(self):
-        if not hasattr(self, '_a'):
+        if not self._a:
             return False
-        r = self.session.get('https://train.usaco.org/?a=%s' % self._a)
+        r = self._get('https://train.usaco.org/')
         return 'Refresh this page' in r.text
 
     def submit(self, id, file, lang='c++'):
-        r = self.session.post(
+        id
+        lang
+        r = self._post(
             'https://train.usaco.org/upload3',
-            files={'filename': ('file', file), 'a': (None, self._a)},
+            files={'filename': ('file', file)},
         )
         s = (
             BeautifulSoup(r.content, 'html.parser')
